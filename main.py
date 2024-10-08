@@ -34,6 +34,7 @@ SECOND_MICRO_INSTANCE = os.getenv("SECOND_MICRO_INSTANCE", 'False').strip().lowe
 OCI_SUBNET_ID = os.getenv("OCI_SUBNET_ID", None).strip() if os.getenv("OCI_SUBNET_ID") else None
 OPERATING_SYSTEM = os.getenv("OPERATING_SYSTEM", "").strip()
 OS_VERSION = os.getenv("OS_VERSION", "").strip()
+BOOT_VOLUME_SIZE = os.getenv("BOOT_VOLUME_SIZE", "48").strip()
 NOTIFY_EMAIL = os.getenv("NOTIFY_EMAIL", 'False').strip().lower() == 'true'
 EMAIL = os.getenv("EMAIL", "").strip()
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "").strip()
@@ -414,6 +415,8 @@ def launch_instance():
     else:
         oci_image_id = OCI_IMAGE_ID
 
+    boot_volume_size = max(48, int(BOOT_VOLUME_SIZE))
+
     ssh_public_key = read_or_generate_ssh_public_key(SSH_AUTHORIZED_KEYS_FILE)
 
     # Step 5 - Launch Instance if it's not already exist and running
@@ -438,7 +441,6 @@ def launch_instance():
                     ),
                     display_name=DISPLAY_NAME,
                     shape=OCI_COMPUTE_SHAPE,
-                    image_id=oci_image_id,
                     availability_config=oci.core.models.LaunchInstanceAvailabilityConfigDetails(
                         recovery_action="RESTORE_INSTANCE"
                     ),
@@ -446,6 +448,11 @@ def launch_instance():
                         are_legacy_imds_endpoints_disabled=False
                     ),
                     shape_config=shape_config,
+                    source_details=oci.core.models.InstanceSourceViaImageDetails(
+                        source_type="image",
+                        image_id=oci_image_id,
+                        boot_volume_size_in_gbs=boot_volume_size,
+                    ),
                     metadata={
                         "ssh_authorized_keys": ssh_public_key},
                 )
