@@ -418,7 +418,7 @@ def launch_instance():
 
     assign_public_ip = ASSIGN_PUBLIC_IP.lower() in [ "true", "1", "y", "yes" ]
 
-    boot_volume_size = min(48, int(BOOT_VOLUME_SIZE))
+    boot_volume_size = max(48, int(BOOT_VOLUME_SIZE))
 
     ssh_public_key = read_or_generate_ssh_public_key(SSH_AUTHORIZED_KEYS_FILE)
 
